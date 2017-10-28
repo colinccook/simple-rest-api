@@ -21,48 +21,60 @@ mongoClient.connect('mongodb://simple-rest-api-user:323e2428-1447-4681-bdc2-5eee
     });
 });
 
+// ********
 // ROUTES!!
-app.get('/hello', (req, res) => {
+// ********
+
+// nice hello world API call for testing/demo purposes
+app.all('/hello', (req, res) => {
     res.send('Hello world!');
 });
 
+// if any request is made to root, list avilable routes
+app.all('/', (req, res) => {
+    var cursor = db.listCollections().toArray((err, results) => {
+        if (err) return res.status(500).json(err);
+        return res.json(results.map((c) => c.name));
+    });
+});
+
 // http post (create)
-app.post('/', (req, res) => {
+app.post('/*', (req, res) => {
     if (!req.body) return res.status(400).json("You must provide a body in a post");
     if (!Object.keys(req.body).length) return res.status(400).json("You must provide a JSON object with something in it");
 
-    db.collection('root').save(req.body, (err, result) => {
+    db.collection(req.path).save(req.body, (err, result) => {
         if (err) return res.status(500).json(err);
         return res.json(result);
     })
 });
 
 // http get (read)
-app.get('/', (req, res) => {
-    var cursor = db.collection('root').find().toArray((err, results) => {
+app.get('/*', (req, res) => {
+    var cursor = db.collection(req.path).find().toArray((err, results) => {
         if (err) return res.status(500).json(err);
         return res.json(results);
     });
 });
 
 // http put (update/replace)
-app.put('/', (req, res) => {
+app.put('/*', (req, res) => {
     if (!req.body) return res.status(400).json("You must provide a body in a post");
     if (!Object.keys(req.body).length) return res.status(400).json("You must provide a JSON object with something in it");
 
-    db.collection('root').update(req.body, (err, result) => {
+    db.collection(req.path).update(req.body, (err, result) => {
         if (err) return res.status(500).json(err);
         return res.json(result);
     })
 });
 
 // http delete
-app.delete('/', (req, res) => {
+app.delete('/*', (req, res) => {
     if (!req.body) return res.status(400).json("You must provide a body in a post");
     if (!Object.keys(req.body).length) return res.status(400).json("You must provide a JSON object");
     if (!req.body._id) return res.status(400).json('You must provide an \'_id\' property to delete');
 
-    db.collection('root').deleteOne({_id: new mongodb.ObjectID(req.body._id)}, (err, result) => {
+    db.collection(req.path).deleteOne({_id: new mongodb.ObjectID(req.body._id)}, (err, result) => {
         if (err) return res.status(500).json(err);
         return res.json(result);
     });
