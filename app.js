@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const mongoClient = require('mongodb').MongoClient;
+const guid = require('guid');
 
 // mongo db stuff
 var db;
@@ -26,6 +27,8 @@ app.post('/', (req, res) => {
     if (req.body.id) { 
         return res.status(404).json('You cannot post an ID; the API will provide one for you');
     }
+
+    req.body.id = guid.raw();
 
     db.collection('root').save(req.body, (err, result) => {
         if (err) return res.status(500).json(err);
