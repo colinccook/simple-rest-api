@@ -1,8 +1,8 @@
 version: '2.1'
 
 services:
-  simplerestapi:
-    image: simplerestapi
+  simple-rest-api:
+    image: simple-rest-api
     build: .
     environment:
       NODE_ENV: production

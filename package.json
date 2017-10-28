@@ -1,5 +1,5 @@
 {
-  "name": "simplerestapi",
+  "name": "simple-rest-api",
   "version": "1.0.0",
   "description": "A very simple api for writing Angular against",
   "main": "app.js",
