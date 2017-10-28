@@ -4,14 +4,24 @@ const mongodb = require('mongodb');
 const mongoClient = mongodb.MongoClient;
 const guid = require('guid');
 const bodyParser = require('body-parser');
+const fs = require('fs');
 
 // ensure express parses body (and this has to be done before the routes below)
 app.use(bodyParser.json());
 
+// secret key stuff (so that we can configure a mongodb connection)
+function getSecret(secretKey) {
+    // first try Docker container (docker cloud)
+    if (process.env[secretKey])
+        return process.env[secretKey].trim();
+
+    return fs.readFileSync(secretKey, 'utf8').trim();
+}
+
 // mongo db stuff
 var db;
 
-mongoClient.connect('mongodb://simple-rest-api-user:323e2428-1447-4681-bdc2-5eee4b5a9d99@ds237475.mlab.com:37475/simple-rest-api', (err, database) => {
+mongoClient.connect(getSecret('mongodb-connection-string'), (err, database) => {
     if (err) return console.log(err);
 
     db = database;
