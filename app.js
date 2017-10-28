@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
-const mongoClient = require('mongodb').MongoClient;
+const mongodb = require('mongodb');
+const mongoClient = mongodb.MongoClient;
 const guid = require('guid');
 const bodyParser = require('body-parser');
 
@@ -49,7 +50,7 @@ app.put('/', (req, res) => {
     if (!req.body) return res.status(400).json("You must provide a body in a post");
     if (!Object.keys(req.body).length) return res.status(400).json("You must provide a JSON object with something in it");
 
-    db.collection('root').save(req.body, (err, result) => {
+    db.collection('root').update(req.body, (err, result) => {
         if (err) return res.status(500).json(err);
         return res.json(result);
     })
@@ -61,8 +62,8 @@ app.delete('/', (req, res) => {
     if (!Object.keys(req.body).length) return res.status(400).json("You must provide a JSON object");
     if (!req.body._id) return res.status(400).json('You must provide an \'_id\' property to delete');
 
-    db.collection('root').deleteOne(req.body, (err, result) => {
+    db.collection('root').deleteOne({_id: new mongodb.ObjectID(req.body._id)}, (err, result) => {
         if (err) return res.status(500).json(err);
         return res.json(result);
-    })
+    });
 })
