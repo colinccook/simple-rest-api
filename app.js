@@ -10,18 +10,18 @@ const fs = require('fs');
 app.use(bodyParser.json());
 
 // secret key stuff (so that we can configure a mongodb connection)
-function getSecret(secretKey) {
-    // first try Docker container (docker cloud)
-    if (process.env[secretKey])
-        return process.env[secretKey].trim();
+function getMongoConnectionString() {
 
-    return fs.readFileSync(secretKey, 'utf8').trim();
+    if (process.env.mongoconnection)
+        return process.env.mongoconnection.trim();
+
+    return fs.readFileSync('mongoconnection', 'utf8').trim();
 }
 
 // mongo db stuff
 var db;
 
-mongoClient.connect(getSecret('mongodb-connection-string'), (err, database) => {
+mongoClient.connect(getMongoConnectionString(), (err, database) => {
     if (err) return console.log(err);
 
     db = database;
