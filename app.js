@@ -2,6 +2,10 @@ const express = require('express');
 const app = express();
 const mongoClient = require('mongodb').MongoClient;
 const guid = require('guid');
+const bodyParser = require('body-parser');
+
+// ensure express parses body (and this has to be done before the routes below)
+app.use(bodyParser.json());
 
 // mongo db stuff
 var db;
@@ -16,23 +20,49 @@ mongoClient.connect('mongodb://simple-rest-api-user:323e2428-1447-4681-bdc2-5eee
     });
 });
 
-
+// ROUTES!!
 app.get('/hello', (req, res) => {
-    res.send('Hello world!')
+    res.send('Hello world!');
 });
 
 // http post (create)
 app.post('/', (req, res) => {
-
-    if (req.body.id) { 
-        return res.status(404).json('You cannot post an ID; the API will provide one for you');
-    }
-
-    req.body.id = guid.raw();
+    if (!req.body) return res.status(400).json("You must provide a body in a post");
+    if (!Object.keys(req.body).length) return res.status(400).json("You must provide a JSON object with something in it");
 
     db.collection('root').save(req.body, (err, result) => {
         if (err) return res.status(500).json(err);
+        return res.json(result);
     })
-
-    console.log('saved to database');
 });
+
+// http get (read)
+app.get('/', (req, res) => {
+    var cursor = db.collection('root').find().toArray((err, results) => {
+        if (err) return res.status(500).json(err);
+        return res.json(results);
+    });
+});
+
+// http put (update/replace)
+app.put('/', (req, res) => {
+    if (!req.body) return res.status(400).json("You must provide a body in a post");
+    if (!Object.keys(req.body).length) return res.status(400).json("You must provide a JSON object with something in it");
+
+    db.collection('root').save(req.body, (err, result) => {
+        if (err) return res.status(500).json(err);
+        return res.json(result);
+    })
+});
+
+// http delete
+app.delete('/', (req, res) => {
+    if (!req.body) return res.status(400).json("You must provide a body in a post");
+    if (!Object.keys(req.body).length) return res.status(400).json("You must provide a JSON object");
+    if (!req.body._id) return res.status(400).json('You must provide an \'_id\' property to delete');
+
+    db.collection('root').deleteOne(req.body, (err, result) => {
+        if (err) return res.status(500).json(err);
+        return res.json(result);
+    })
+})
